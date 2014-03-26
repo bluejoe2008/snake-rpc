@@ -21,7 +21,8 @@ this feature is very useful for those objects which are valid only on the server
 see https://github.com/bluejoe2008/snake-rpc/blob/master/test/cn/bluejoe/snake/client/SnakeClientTest.java for example usage.
 
 ###server side codes
-a SnakeServlet class is provided, users can create derived classes:
+
+* Step 1: since a SnakeServlet class is provided by snake-rpc, users can create a derived classes and register accessible service objects within init() methods:
 
 		public class MySnakeServlet extends SnakeServlet
 		{
@@ -38,17 +39,20 @@ a SnakeServlet class is provided, users can create derived classes:
 		
 		}
 		
+* Step 2: configures the Servet in web.xml as normal.
+* Step 3: start up web server.
+		
 ###client side codes
-* creates a SnakeClient first:
+* Step 1: creates a SnakeClient first:
 
 		HttpHost hc = new HttpHost("http://localhost:8080");
 		_client = new SnakeClient(hc, "http://localhost:8080/rpc", "", "");
 
-* uses createServiceObjectProxy() to retrieve remote object:
+* Step 2: uses createServiceObjectProxy() to retrieve remote object:
 
 		FileObject fo = (FileObject) _client.createServiceObjectProxy("file", FileObject.class);
 		
-* now you got the FileObject object, just call methods on it:
+* Step 3: now you got the FileObject object, just call methods on it:
 
 		FileObject[] cfs = fo.listFiles();
 		Assert.assertEquals(1, cfs.length);
