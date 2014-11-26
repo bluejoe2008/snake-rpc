@@ -120,8 +120,11 @@ public class DefaultServiceObjectPool implements ServiceObjectPool
 	{
 		for (String name : handles)
 		{
-			_cachedServiceObjects.remove(name);
-			Logger.getLogger(this.getClass()).debug(String.format("removing object: %s", name));
+			if (_cachedServiceObjects.containsKey(name))
+			{
+				_cachedServiceObjects.remove(name);
+				Logger.getLogger(this.getClass()).debug(String.format("removing object: %s", name));
+			}
 		}
 	}
 }
