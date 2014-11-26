@@ -1,6 +1,6 @@
 package cn.bluejoe.snake.server;
 
-import cn.bluejoe.snake.mem.DefaultServiceObjectPool;
+import cn.bluejoe.snake.mem.ServiceObjectPool;
 import cn.bluejoe.snake.so.ServiceObjectHandle;
 
 import com.caucho.hessian.io.AbstractHessianInput;
@@ -14,25 +14,25 @@ import com.caucho.hessian.io.JavaDeserializer;
  */
 public class ServerSideObjectDeserializer extends JavaDeserializer implements Deserializer
 {
-	private ServerSideServiceObjectSerializerFactory _serializerFactory;
+	private ServiceObjectPool _pool;
 
-	public ServerSideObjectDeserializer(ServerSideServiceObjectSerializerFactory serializerFactory)
+	public ServerSideObjectDeserializer(ServiceObjectPool pool)
 	{
 		super(ServiceObjectHandle.class);
-		_serializerFactory = serializerFactory;
+		_pool = pool;
 	}
 
 	@Override
 	protected Object resolve(AbstractHessianInput in, Object obj) throws Exception
 	{
 		ServiceObjectHandle remoteObject = (ServiceObjectHandle) obj;
-		DefaultServiceObjectPool pool = _serializerFactory.getPool();
+
 		String objectId = remoteObject.getObjectId();
-		if (!pool.containsServiceObject(objectId))
+		if (!_pool.containsServiceObject(objectId))
 		{
 			throw new RuntimeException(String.format("'%s' is no longer a valid object", objectId));
 		}
 
-		return pool.getServiceObject(objectId);
+		return _pool.getServiceObject(objectId);
 	}
 }

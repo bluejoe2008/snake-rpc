@@ -28,11 +28,11 @@ import org.apache.http.entity.EntityTemplate;
 import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.BasicAuthCache;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.SingleClientConnManager;
+import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.log4j.Logger;
 
-import cn.bluejoe.snake.mem.ObjectPoolService;
+import cn.bluejoe.snake.mem.ServiceObjectPool;
 import cn.bluejoe.snake.message.SnakeMessageReader;
 import cn.bluejoe.snake.message.SnakeMessageWriter;
 import cn.bluejoe.snake.server.ServerSideRunnable;
@@ -119,12 +119,7 @@ public class SnakeClient
 
 	public static DefaultHttpClient createHttpClient()
 	{
-		return new DefaultHttpClient(new SingleClientConnManager());
-	}
-
-	public ObjectPoolService getServerSideServiceObjectPool()
-	{
-		return ((ObjectPoolService) createServiceObjectProxy(SnakeServer.SERVICE_OBJECT_POOL, ObjectPoolService.class));
+		return new DefaultHttpClient(new ThreadSafeClientConnManager());
 	}
 
 	public static HttpClient createHttpClient(HttpHost targetHost, String user, String password)
@@ -162,25 +157,15 @@ public class SnakeClient
 
 	private long _checkServiceObjectsInterval = 60000;
 
-	public long getCheckServiceObjectsInterval()
-	{
-		return _checkServiceObjectsInterval;
-	}
-
-	public void setCheckServiceObjectsInterval(long checkServiceObjectsInterval)
-	{
-		_checkServiceObjectsInterval = checkServiceObjectsInterval;
-	}
-
 	HttpClient _httpClient;
 
-	SerializerFactory _serializerFactory;;
+	SerializerFactory _serializerFactory;
 
 	ServiceObjectsCollector _serviceObjectsMonitor;
 
 	String _serviceUrl;
 
-	StreamReceiverFactory _streamSourceFactory = new ByteArrayStreamReceiverFactory();
+	StreamReceiverFactory _streamSourceFactory = new ByteArrayStreamReceiverFactory();;
 
 	public SnakeClient(HttpClient httpClient, String serviceUrl)
 	{
@@ -207,6 +192,16 @@ public class SnakeClient
 		Object proxy = new ServiceObjectProxyFactory().create(this, serviceObjectName, apiClasses);
 		_serviceObjectsMonitor.collect(serviceObjectName, proxy);
 		return proxy;
+	}
+
+	public long getCheckServiceObjectsInterval()
+	{
+		return _checkServiceObjectsInterval;
+	}
+
+	public ServiceObjectPool getServerSideServiceObjectPool()
+	{
+		return ((ServiceObjectPool) createServiceObjectProxy(SnakeServer.SERVICE_OBJECT_POOL, ServiceObjectPool.class));
 	}
 
 	public StreamReceiverFactory getStreamSourceFactory()
@@ -253,6 +248,11 @@ public class SnakeClient
 				httpPost.abort();
 			}
 		}
+	}
+
+	public void setCheckServiceObjectsInterval(long checkServiceObjectsInterval)
+	{
+		_checkServiceObjectsInterval = checkServiceObjectsInterval;
 	}
 
 	public void setStreamSourceFactory(StreamReceiverFactory streamSourceFactory)

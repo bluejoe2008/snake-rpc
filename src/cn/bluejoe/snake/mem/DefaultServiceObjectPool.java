@@ -11,7 +11,7 @@ import org.apache.log4j.Logger;
  * @author bluejoe2008@gmail.com
  * 
  */
-public class DefaultServiceObjectPool implements ObjectPoolService
+public class DefaultServiceObjectPool implements  ServiceObjectPool
 {
 	long _idCounter;
 

@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import org.apache.commons.lang.ClassUtils;
 
-import cn.bluejoe.snake.mem.DefaultServiceObjectPool;
+import cn.bluejoe.snake.mem.ServiceObjectPool;
 
 import com.caucho.hessian.io.AbstractHessianOutput;
 import com.caucho.hessian.io.Serializer;
@@ -18,9 +18,9 @@ public class ServerSideObjectSerializer implements Serializer
 {
 	private Class _interfaceClass;
 
-	private DefaultServiceObjectPool _pool;
+	private ServiceObjectPool _pool;
 
-	public ServerSideObjectSerializer(DefaultServiceObjectPool pool, Class ic)
+	public ServerSideObjectSerializer(ServiceObjectPool pool, Class ic)
 	{
 		_interfaceClass = ic;
 		_pool = pool;

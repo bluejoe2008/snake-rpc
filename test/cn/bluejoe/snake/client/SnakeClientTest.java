@@ -18,7 +18,7 @@ import org.mortbay.jetty.Server;
 import org.mortbay.jetty.servlet.Context;
 import org.mortbay.jetty.servlet.ServletHolder;
 
-import cn.bluejoe.snake.mem.ObjectPoolService;
+import cn.bluejoe.snake.mem.ServiceObjectPool;
 
 public class SnakeClientTest
 {
@@ -60,7 +60,7 @@ public class SnakeClientTest
 	public void test() throws FileNotFoundException, IOException, InterruptedException
 	{
 		test1();
-		ObjectPoolService pool = _client.getServerSideServiceObjectPool();
+		ServiceObjectPool pool = _client.getServerSideServiceObjectPool();
 		//等待服务器端清除过期对象
 		Thread.sleep(600);
 		//临时的对象应该被删除
@@ -96,7 +96,7 @@ public class SnakeClientTest
 		Assert.assertTrue(IOUtils.contentEquals(new ByteArrayInputStream(DigestUtils.md5(new FileInputStream(f1))),
 			cfs0.md5(new FileInputStream(f1))));
 
-		ObjectPoolService pool = _client.getServerSideServiceObjectPool();
+		ServiceObjectPool pool = _client.getServerSideServiceObjectPool();
 		Assert.assertEquals(2, pool.getResidentObjectNames().length);
 		Assert.assertEquals(1, pool.getCachedObjectNames().length);
 	}

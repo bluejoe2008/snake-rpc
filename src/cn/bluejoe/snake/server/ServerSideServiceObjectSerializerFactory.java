@@ -3,7 +3,7 @@ package cn.bluejoe.snake.server;
 import java.util.ArrayList;
 import java.util.List;
 
-import cn.bluejoe.snake.mem.DefaultServiceObjectPool;
+import cn.bluejoe.snake.mem.ServiceObjectPool;
 import cn.bluejoe.snake.so.ServerSideObjectSerializer;
 import cn.bluejoe.snake.so.ServiceObjectHandle;
 
@@ -19,11 +19,11 @@ import com.caucho.hessian.io.Serializer;
  */
 public class ServerSideServiceObjectSerializerFactory extends AbstractSerializerFactory
 {
-	private DefaultServiceObjectPool _pool;
+	private ServiceObjectPool _pool;
 
 	List<Class> _serverSideObjectClasses = new ArrayList<Class>();
 
-	public ServerSideServiceObjectSerializerFactory(DefaultServiceObjectPool pool)
+	public ServerSideServiceObjectSerializerFactory(ServiceObjectPool pool)
 	{
 		super();
 		_pool = pool;
@@ -51,15 +51,10 @@ public class ServerSideServiceObjectSerializerFactory extends AbstractSerializer
 	{
 		if (clazz == ServiceObjectHandle.class)
 		{
-			return new ServerSideObjectDeserializer(this);
+			return new ServerSideObjectDeserializer(_pool);
 		}
 
 		return null;
-	}
-
-	public DefaultServiceObjectPool getPool()
-	{
-		return _pool;
 	}
 
 	private Class getRegisteredInterfaceOf(Class clazz)
@@ -88,11 +83,6 @@ public class ServerSideServiceObjectSerializerFactory extends AbstractSerializer
 	public List<Class> getServerSideObjectClasses()
 	{
 		return _serverSideObjectClasses;
-	}
-
-	public void setPool(DefaultServiceObjectPool pool)
-	{
-		_pool = pool;
 	}
 
 	public void setServerSideObjectClasses(List<Class> serverSideObjectClasses)

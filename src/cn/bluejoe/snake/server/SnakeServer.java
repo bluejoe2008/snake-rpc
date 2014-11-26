@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import cn.bluejoe.snake.mem.DefaultServiceObjectPool;
+import cn.bluejoe.snake.mem.ServiceObjectPool;
 import cn.bluejoe.snake.message.MethodCallReply;
 import cn.bluejoe.snake.message.SnakeMessageReader;
 import cn.bluejoe.snake.message.SnakeMessageWriter;
@@ -26,21 +27,16 @@ public class SnakeServer
 
 	DefaultServiceObjectPool _serviceObjectPool;
 
-	public static String SERVICE_OBJECT_POOL = "serviceObjectPool";
+	public static String SERVICE_OBJECT_POOL = ServiceObjectPool.class.getName();
 
 	StreamReceiverFactory _streamSourceFactory;
 
 	public SnakeServer(SerializerFactory serializerFactory)
 	{
-		this(serializerFactory, new DefaultServiceObjectPool());
-	}
-
-	public SnakeServer(SerializerFactory serializerFactory, DefaultServiceObjectPool serviceObjectPool)
-	{
-		_serverSideSerializerFactory = new ServerSideServiceObjectSerializerFactory(serviceObjectPool);
+		_serviceObjectPool = new DefaultServiceObjectPool();
+		_serverSideSerializerFactory = new ServerSideServiceObjectSerializerFactory(_serviceObjectPool);
 		serializerFactory.addFactory(_serverSideSerializerFactory);
 		_serializerFactory = serializerFactory;
-		_serviceObjectPool = serviceObjectPool;
 		_streamSourceFactory = new ByteArrayStreamReceiverFactory();
 
 		this.registerServiceObject(SERVICE_OBJECT_POOL, _serviceObjectPool);
