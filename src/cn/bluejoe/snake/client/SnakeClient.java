@@ -165,7 +165,7 @@ public class SnakeClient
 
 	String _serviceUrl;
 
-	StreamReceiverFactory _streamSourceFactory = new ByteArrayStreamReceiverFactory();;
+	StreamReceiverFactory _streamSourceFactory = new ByteArrayStreamReceiverFactory();
 
 	public SnakeClient(HttpClient httpClient, String serviceUrl)
 	{
@@ -197,6 +197,11 @@ public class SnakeClient
 	public long getCheckServiceObjectsInterval()
 	{
 		return _checkServiceObjectsInterval;
+	}
+
+	public SerializerFactory getSerializerFactory()
+	{
+		return _serializerFactory;
 	}
 
 	public ServiceObjectPool getServerSideServiceObjectPool()
@@ -253,6 +258,11 @@ public class SnakeClient
 	public void setCheckServiceObjectsInterval(long checkServiceObjectsInterval)
 	{
 		_checkServiceObjectsInterval = checkServiceObjectsInterval;
+	}
+
+	public void setSerializerFactory(SerializerFactory serializerFactory)
+	{
+		_serializerFactory = serializerFactory;
 	}
 
 	public void setStreamSourceFactory(StreamReceiverFactory streamSourceFactory)

@@ -21,15 +21,15 @@ import com.caucho.hessian.io.SerializerFactory;
  */
 public class SnakeServer
 {
+	public static String SERVICE_OBJECT_POOL = ServiceObjectPool.class.getName();
+
 	private SerializerFactory _serializerFactory;
 
 	ServerSideServiceObjectSerializerFactory _serverSideSerializerFactory;
 
 	DefaultServiceObjectPool _serviceObjectPool;
 
-	public static String SERVICE_OBJECT_POOL = ServiceObjectPool.class.getName();
-
-	StreamReceiverFactory _streamSourceFactory;
+	StreamReceiverFactory _streamSourceFactory = new ByteArrayStreamReceiverFactory();
 
 	public SnakeServer(SerializerFactory serializerFactory)
 	{
@@ -37,7 +37,6 @@ public class SnakeServer
 		_serverSideSerializerFactory = new ServerSideServiceObjectSerializerFactory(_serviceObjectPool);
 		serializerFactory.addFactory(_serverSideSerializerFactory);
 		_serializerFactory = serializerFactory;
-		_streamSourceFactory = new ByteArrayStreamReceiverFactory();
 
 		this.registerServiceObject(SERVICE_OBJECT_POOL, _serviceObjectPool);
 	}

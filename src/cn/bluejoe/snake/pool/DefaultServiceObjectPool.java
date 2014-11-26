@@ -11,34 +11,42 @@ import org.apache.log4j.Logger;
  * @author bluejoe2008@gmail.com
  * 
  */
-public class DefaultServiceObjectPool implements  ServiceObjectPool
+public class DefaultServiceObjectPool implements ServiceObjectPool
 {
-	long _idCounter;
-
 	static String OBJECT_ID_FORMAT = "remote-object-%d";
-
-	public long getIdCounter()
-	{
-		return _idCounter;
-	}
-
-	/**
-	 * 永久对象
-	 */
-	Map<String, Object> _residentServiceObjects = new HashMap<String, Object>();
 
 	/**
 	 * 临时生成的对象，cache以备后用
 	 */
 	Map<String, Object> _cachedServiceObjects = new HashMap<String, Object>();
 
+	long _idCounter;
+
+	/**
+	 * 永久对象
+	 */
+	Map<String, Object> _residentServiceObjects = new HashMap<String, Object>();
+
 	public DefaultServiceObjectPool()
 	{
 	}
 
-	public String[] getCachedObjectNames()
+	/**
+	 * 注册远程服务对象，自动创建ID
+	 */
+	public String cacheServiceObject(Object serviceObject)
 	{
-		return _cachedServiceObjects.keySet().toArray(new String[0]);
+		//可能会已经存在
+		String found = findServiceObject(serviceObject);
+
+		if (found != null)
+			return found;
+
+		String id = String.format(OBJECT_ID_FORMAT, _idCounter++);
+		Logger.getLogger(this.getClass()).debug(String.format("caching object: %s = %s", id, serviceObject));
+		_cachedServiceObjects.put(id, serviceObject);
+
+		return id;
 	}
 
 	public boolean containsServiceObject(String serviceObjectName)
@@ -77,6 +85,21 @@ public class DefaultServiceObjectPool implements  ServiceObjectPool
 		return null;
 	}
 
+	public String[] getCachedObjectNames()
+	{
+		return _cachedServiceObjects.keySet().toArray(new String[0]);
+	}
+
+	public long getIdCounter()
+	{
+		return _idCounter;
+	}
+
+	public String[] getResidentObjectNames()
+	{
+		return _residentServiceObjects.keySet().toArray(new String[0]);
+	}
+
 	public Object getServiceObject(String serviceObjectName)
 	{
 		if (_residentServiceObjects.containsKey(serviceObjectName))
@@ -85,24 +108,6 @@ public class DefaultServiceObjectPool implements  ServiceObjectPool
 		}
 
 		return _cachedServiceObjects.get(serviceObjectName);
-	}
-
-	/**
-	 * 注册远程服务对象，自动创建ID
-	 */
-	public String cacheServiceObject(Object serviceObject)
-	{
-		//可能会已经存在
-		String found = findServiceObject(serviceObject);
-
-		if (found != null)
-			return found;
-
-		String id = String.format(OBJECT_ID_FORMAT, _idCounter++);
-		Logger.getLogger(this.getClass()).debug(String.format("caching object: %s = %s", id, serviceObject));
-		_cachedServiceObjects.put(id, serviceObject);
-
-		return id;
 	}
 
 	public void registerServiceObject(String objectId, Object serviceObject)
@@ -118,10 +123,5 @@ public class DefaultServiceObjectPool implements  ServiceObjectPool
 			_cachedServiceObjects.remove(name);
 			Logger.getLogger(this.getClass()).debug(String.format("removing object: %s", name));
 		}
-	}
-
-	public String[] getResidentObjectNames()
-	{
-		return _residentServiceObjects.keySet().toArray(new String[0]);
 	}
 }
