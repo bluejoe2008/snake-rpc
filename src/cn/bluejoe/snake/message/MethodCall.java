@@ -29,8 +29,8 @@ public class MethodCall implements ServerSideRunnable, Serializable
 
 		if (serviceObject == null)
 		{
-			String errmsg = "Unknown Service Object Id: " + _serviceObjectName;
-			throw new Exception(errmsg);
+			String errMsg = "Unknown Service Object Id: " + _serviceObjectName;
+			throw new Exception(errMsg);
 		}
 		try
 		{
