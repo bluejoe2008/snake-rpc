@@ -1,5 +1,6 @@
 package cn.bluejoe.snake.server;
 
+import cn.bluejoe.snake.mem.DefaultServiceObjectPool;
 import cn.bluejoe.snake.so.ServiceObjectHandle;
 
 import com.caucho.hessian.io.AbstractHessianInput;
@@ -25,7 +26,7 @@ public class ServerSideObjectDeserializer extends JavaDeserializer implements De
 	protected Object resolve(AbstractHessianInput in, Object obj) throws Exception
 	{
 		ServiceObjectHandle remoteObject = (ServiceObjectHandle) obj;
-		ServiceObjectPool pool = _serializerFactory.getPool();
+		DefaultServiceObjectPool pool = _serializerFactory.getPool();
 		String objectId = remoteObject.getObjectId();
 		if (!pool.containsServiceObject(objectId))
 		{

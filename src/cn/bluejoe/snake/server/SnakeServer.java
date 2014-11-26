@@ -3,8 +3,8 @@ package cn.bluejoe.snake.server;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Properties;
 
+import cn.bluejoe.snake.mem.DefaultServiceObjectPool;
 import cn.bluejoe.snake.message.MethodCallReply;
 import cn.bluejoe.snake.message.SnakeMessageReader;
 import cn.bluejoe.snake.message.SnakeMessageWriter;
@@ -24,29 +24,26 @@ public class SnakeServer
 
 	ServerSideServiceObjectSerializerFactory _serverSideSerializerFactory;
 
-	ServiceObjectPool _serviceObjectPool;
+	DefaultServiceObjectPool _serviceObjectPool;
+
+	public static String SERVICE_OBJECT_POOL = "serviceObjectPool";
 
 	StreamReceiverFactory _streamSourceFactory;
 
 	public SnakeServer(SerializerFactory serializerFactory)
 	{
-		this(serializerFactory, new ServiceObjectPool(2000, 3600000));
+		this(serializerFactory, new DefaultServiceObjectPool());
 	}
 
-	public SnakeServer(SerializerFactory serializerFactory, Properties props)
-	{
-		this(serializerFactory, new ServiceObjectPool(Long.parseLong(props
-				.getProperty("ServiceObjectPool.monitorInterval")), Long.parseLong(props
-				.getProperty("ServiceObjectPool.maxAliveTime"))));
-	}
-
-	public SnakeServer(SerializerFactory serializerFactory, ServiceObjectPool serviceObjectPool)
+	public SnakeServer(SerializerFactory serializerFactory, DefaultServiceObjectPool serviceObjectPool)
 	{
 		_serverSideSerializerFactory = new ServerSideServiceObjectSerializerFactory(serviceObjectPool);
 		serializerFactory.addFactory(_serverSideSerializerFactory);
 		_serializerFactory = serializerFactory;
 		_serviceObjectPool = serviceObjectPool;
 		_streamSourceFactory = new ByteArrayStreamReceiverFactory();
+
+		this.registerServiceObject(SERVICE_OBJECT_POOL, _serviceObjectPool);
 	}
 
 	public void declareServerSideObjectClass(Class... classes)
@@ -76,7 +73,7 @@ public class SnakeServer
 
 	public void registerServiceObject(String objectId, Object serviceObject)
 	{
-		_serviceObjectPool.registerServiceObject(objectId, serviceObject, -1);
+		_serviceObjectPool.registerServiceObject(objectId, serviceObject);
 	}
 
 	public void response(OutputStream os, MethodCallReply responseCommand) throws IOException
@@ -108,5 +105,29 @@ public class SnakeServer
 	public void setStreamSourceFactory(StreamReceiverFactory streamSourceFactory)
 	{
 		_streamSourceFactory = streamSourceFactory;
+	}
+
+	public void destroy(String[] handles)
+	{
+		_serviceObjectPool.destoryServiceObjects(handles);
+	}
+
+	public void destoryServiceObjects(String[] handles)
+	{
+	}
+
+	public boolean containsServiceObject(String serviceObjectName)
+	{
+		return false;
+	}
+
+	public String[] getPooledObjectNames()
+	{
+		return null;
+	}
+
+	public long getIdCounter()
+	{
+		return 0;
 	}
 }

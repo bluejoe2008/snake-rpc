@@ -3,9 +3,15 @@ package cn.bluejoe.snake.client;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
@@ -24,10 +30,13 @@ import org.apache.http.impl.client.BasicAuthCache;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.SingleClientConnManager;
 import org.apache.http.protocol.BasicHttpContext;
+import org.apache.log4j.Logger;
 
+import cn.bluejoe.snake.mem.ObjectPoolService;
 import cn.bluejoe.snake.message.SnakeMessageReader;
 import cn.bluejoe.snake.message.SnakeMessageWriter;
 import cn.bluejoe.snake.server.ServerSideRunnable;
+import cn.bluejoe.snake.server.SnakeServer;
 import cn.bluejoe.snake.so.ServiceObjectProxyFactory;
 import cn.bluejoe.snake.stream.ByteArrayStreamReceiverFactory;
 import cn.bluejoe.snake.stream.StreamReceiverFactory;
@@ -41,40 +50,82 @@ import com.caucho.hessian.io.SerializerFactory;
  */
 public class SnakeClient
 {
-	HttpClient _httpClient;
-
-	SerializerFactory _serializerFactory;
-
-	String _serviceUrl;
-
-	StreamReceiverFactory _streamSourceFactory = new ByteArrayStreamReceiverFactory();
-
-	public SnakeClient(HttpClient httpClient, String serviceUrl)
+	class ServiceObjectsMonitorThread extends Thread
 	{
-		_httpClient = httpClient;
-		_serviceUrl = serviceUrl;
-		_serializerFactory = new SerializerFactory();
-		_serializerFactory.addFactory(new ClientSideRemoteObjectSerializerFactory(this));
+		Map<String, WeakReference<?>> _refs = new HashMap<String, WeakReference<?>>();
+
+		WeakReference<?> _threadRef;
+
+		public ServiceObjectsMonitorThread(SnakeClient owner)
+		{
+			_threadRef = new WeakReference<Object>(owner);
+		}
+
+		public void cache(String handle, Object serviceObject)
+		{
+			synchronized (_refs)
+			{
+				_refs.put(handle, new WeakReference<Object>(serviceObject));
+			}
+		}
+
+		public void run()
+		{
+			//当前client没有被销毁
+			while (_threadRef.get() != null)
+			{
+				try
+				{
+					Thread.sleep(_checkServiceObjectsInterval);
+				}
+				catch (InterruptedException e)
+				{
+					//e.printStackTrace();
+				}
+
+				List<String> deadObjectHandles = new ArrayList<String>();
+
+				//判断哪些对象不用了
+				synchronized (_refs)
+				{
+					Map<String, WeakReference<?>> refs0 = new HashMap<String, WeakReference<?>>();
+					for (Entry<String, WeakReference<?>> me : _refs.entrySet())
+					{
+						if (me.getValue().get() == null)
+						{
+							deadObjectHandles.add(me.getKey());
+						}
+						else
+						{
+							refs0.put(me.getKey(), me.getValue());
+						}
+					}
+
+					_refs = refs0;
+				}
+
+				//通知服务器端删除掉过期对象
+				if (!deadObjectHandles.isEmpty())
+				{
+					Logger.getLogger(getClass()).debug(
+						String.format("request to remove objects on server side: %s", deadObjectHandles));
+					getServerSideServiceObjectPool().destoryServiceObjects(deadObjectHandles.toArray(new String[0]));
+				}
+			}
+		}
 	}
 
-	public SnakeClient(HttpHost targetHost, String serviceUrl, String user, String password)
-	{
-		this(null, serviceUrl);
-		_httpClient = createHttpClient(targetHost, user, password);
-	}
-
-	public SnakeClient(String serviceUrl)
-	{
-		this(null, serviceUrl);
-		_httpClient = createHttpClient();
-	}
-
-	protected DefaultHttpClient createHttpClient()
+	public static DefaultHttpClient createHttpClient()
 	{
 		return new DefaultHttpClient(new SingleClientConnManager());
 	}
 
-	protected HttpClient createHttpClient(HttpHost targetHost, String user, String password)
+	public ObjectPoolService getServerSideServiceObjectPool()
+	{
+		return ((ObjectPoolService) createServiceObjectProxy(SnakeServer.SERVICE_OBJECT_POOL, ObjectPoolService.class));
+	}
+
+	public static HttpClient createHttpClient(HttpHost targetHost, String user, String password)
 	{
 		final DefaultHttpClient httpClient = createHttpClient();
 
@@ -90,8 +141,8 @@ public class SnakeClient
 		final BasicHttpContext clientContext = new BasicHttpContext();
 		clientContext.setAttribute(ClientContext.AUTH_CACHE, authCache);
 
-		return (HttpClient) Proxy.newProxyInstance(this.getClass().getClassLoader(), new Class[] { HttpClient.class },
-			new InvocationHandler()
+		return (HttpClient) Proxy.newProxyInstance(SnakeClient.class.getClassLoader(),
+			new Class[] { HttpClient.class }, new InvocationHandler()
 			{
 				public Object invoke(Object proxy, Method method, Object[] args) throws Throwable
 				{
@@ -107,9 +158,53 @@ public class SnakeClient
 			});
 	}
 
+	private long _checkServiceObjectsInterval = 60000;
+
+	public long getCheckServiceObjectsInterval()
+	{
+		return _checkServiceObjectsInterval;
+	}
+
+	public void setCheckServiceObjectsInterval(long checkServiceObjectsInterval)
+	{
+		_checkServiceObjectsInterval = checkServiceObjectsInterval;
+	}
+
+	HttpClient _httpClient;
+
+	SerializerFactory _serializerFactory;;
+
+	ServiceObjectsMonitorThread _serviceObjectsMonitor;
+
+	String _serviceUrl;
+
+	StreamReceiverFactory _streamSourceFactory = new ByteArrayStreamReceiverFactory();
+
+	public SnakeClient(HttpClient httpClient, String serviceUrl)
+	{
+		_httpClient = httpClient;
+		_serviceUrl = serviceUrl;
+		_serializerFactory = new SerializerFactory();
+		_serializerFactory.addFactory(new ClientSideRemoteObjectSerializerFactory(this));
+		_serviceObjectsMonitor = new ServiceObjectsMonitorThread(this);
+		_serviceObjectsMonitor.start();
+	}
+
+	public SnakeClient(HttpHost targetHost, String serviceUrl, String user, String password)
+	{
+		this(createHttpClient(targetHost, user, password), serviceUrl);
+	}
+
+	public SnakeClient(String serviceUrl)
+	{
+		this(createHttpClient(), serviceUrl);
+	}
+
 	public Object createServiceObjectProxy(String serviceObjectName, Class... apiClasses)
 	{
-		return new ServiceObjectProxyFactory().create(this, serviceObjectName, apiClasses);
+		Object proxy = new ServiceObjectProxyFactory().create(this, serviceObjectName, apiClasses);
+		_serviceObjectsMonitor.cache(serviceObjectName, proxy);
+		return proxy;
 	}
 
 	public StreamReceiverFactory getStreamSourceFactory()

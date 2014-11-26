@@ -18,6 +18,8 @@ import org.mortbay.jetty.Server;
 import org.mortbay.jetty.servlet.Context;
 import org.mortbay.jetty.servlet.ServletHolder;
 
+import cn.bluejoe.snake.mem.ObjectPoolService;
+
 public class SnakeClientTest
 {
 	SnakeClient _client;
@@ -46,6 +48,7 @@ public class SnakeClientTest
 		Thread.sleep(1000);
 		HttpHost hc = new HttpHost("http://localhost:8080");
 		_client = new SnakeClient(hc, "http://localhost:8080/rpc", "", "");
+		_client.setCheckServiceObjectsInterval(100);
 	}
 
 	@After
@@ -54,7 +57,15 @@ public class SnakeClientTest
 	}
 
 	@Test
-	public void test() throws FileNotFoundException, IOException
+	public void test() throws FileNotFoundException, IOException, InterruptedException
+	{
+		ObjectPoolService pool = _client.getServerSideServiceObjectPool();
+		//等待服务器端清除过期对象
+		Thread.sleep(600);
+		Assert.assertEquals(2, pool.getPooledObjectNames().length);
+	}
+
+	protected void test1() throws IOException, FileNotFoundException
 	{
 		File dir = new File("./testdir");
 		File f1 = new File("./testdir/1.gif");
@@ -80,5 +91,8 @@ public class SnakeClientTest
 		//inputstreams as input and output is ok
 		Assert.assertTrue(IOUtils.contentEquals(new ByteArrayInputStream(DigestUtils.md5(new FileInputStream(f1))),
 			cfs0.md5(new FileInputStream(f1))));
+
+		ObjectPoolService pool = _client.getServerSideServiceObjectPool();
+		Assert.assertEquals(3, pool.getPooledObjectNames().length);
 	}
 }

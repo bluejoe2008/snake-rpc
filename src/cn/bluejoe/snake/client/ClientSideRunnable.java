@@ -7,7 +7,5 @@ package cn.bluejoe.snake.client;
  */
 public interface ClientSideRunnable
 {
-
 	Object execute(SnakeClient snakeClient) throws Exception;
-
 }

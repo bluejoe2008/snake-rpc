@@ -34,5 +34,4 @@ public class ByteArrayStreamReceiverFactory implements StreamReceiverFactory
 			}
 		};
 	}
-
 }

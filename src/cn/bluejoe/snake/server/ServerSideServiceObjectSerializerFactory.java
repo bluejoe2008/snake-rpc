@@ -3,6 +3,7 @@ package cn.bluejoe.snake.server;
 import java.util.ArrayList;
 import java.util.List;
 
+import cn.bluejoe.snake.mem.DefaultServiceObjectPool;
 import cn.bluejoe.snake.so.ServerSideObjectSerializer;
 import cn.bluejoe.snake.so.ServiceObjectHandle;
 
@@ -18,11 +19,11 @@ import com.caucho.hessian.io.Serializer;
  */
 public class ServerSideServiceObjectSerializerFactory extends AbstractSerializerFactory
 {
-	private ServiceObjectPool _pool;
+	private DefaultServiceObjectPool _pool;
 
 	List<Class> _serverSideObjectClasses = new ArrayList<Class>();
 
-	public ServerSideServiceObjectSerializerFactory(ServiceObjectPool pool)
+	public ServerSideServiceObjectSerializerFactory(DefaultServiceObjectPool pool)
 	{
 		super();
 		_pool = pool;
@@ -56,7 +57,7 @@ public class ServerSideServiceObjectSerializerFactory extends AbstractSerializer
 		return null;
 	}
 
-	public ServiceObjectPool getPool()
+	public DefaultServiceObjectPool getPool()
 	{
 		return _pool;
 	}
@@ -89,7 +90,7 @@ public class ServerSideServiceObjectSerializerFactory extends AbstractSerializer
 		return _serverSideObjectClasses;
 	}
 
-	public void setPool(ServiceObjectPool pool)
+	public void setPool(DefaultServiceObjectPool pool)
 	{
 		_pool = pool;
 	}
