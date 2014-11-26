@@ -59,10 +59,14 @@ public class SnakeClientTest
 	@Test
 	public void test() throws FileNotFoundException, IOException, InterruptedException
 	{
+		test1();
 		ObjectPoolService pool = _client.getServerSideServiceObjectPool();
 		//等待服务器端清除过期对象
 		Thread.sleep(600);
-		Assert.assertEquals(2, pool.getPooledObjectNames().length);
+		//临时的对象应该被删除
+		//主动注册的对象应该一直存在
+		Assert.assertEquals(0, pool.getCachedObjectNames().length);
+		Assert.assertEquals(2, pool.getResidentObjectNames().length);
 	}
 
 	protected void test1() throws IOException, FileNotFoundException
@@ -93,6 +97,7 @@ public class SnakeClientTest
 			cfs0.md5(new FileInputStream(f1))));
 
 		ObjectPoolService pool = _client.getServerSideServiceObjectPool();
-		Assert.assertEquals(3, pool.getPooledObjectNames().length);
+		Assert.assertEquals(2, pool.getResidentObjectNames().length);
+		Assert.assertEquals(1, pool.getCachedObjectNames().length);
 	}
 }

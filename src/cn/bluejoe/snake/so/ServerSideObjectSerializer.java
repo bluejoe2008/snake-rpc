@@ -30,7 +30,7 @@ public class ServerSideObjectSerializer implements Serializer
 	{
 		ServiceObjectHandle handle = new ServiceObjectHandle();
 		handle.setApiClasses((Class[]) ClassUtils.getAllInterfaces(obj.getClass()).toArray(new Class[0]));
-		handle.setObjectId(_pool.registerServiceObject(obj));
+		handle.setObjectId(_pool.cacheServiceObject(obj));
 		out.writeObject(handle);
 	}
 

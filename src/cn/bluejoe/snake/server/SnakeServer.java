@@ -68,7 +68,7 @@ public class SnakeServer
 
 	public String registerServiceObject(Object serviceObject)
 	{
-		return _serviceObjectPool.registerServiceObject(serviceObject);
+		return _serviceObjectPool.cacheServiceObject(serviceObject);
 	}
 
 	public void registerServiceObject(String objectId, Object serviceObject)

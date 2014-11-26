@@ -50,18 +50,18 @@ import com.caucho.hessian.io.SerializerFactory;
  */
 public class SnakeClient
 {
-	class ServiceObjectsMonitorThread extends Thread
+	class ServiceObjectsCollector extends Thread
 	{
 		Map<String, WeakReference<?>> _refs = new HashMap<String, WeakReference<?>>();
 
 		WeakReference<?> _threadRef;
 
-		public ServiceObjectsMonitorThread(SnakeClient owner)
+		public ServiceObjectsCollector(SnakeClient owner)
 		{
 			_threadRef = new WeakReference<Object>(owner);
 		}
 
-		public void cache(String handle, Object serviceObject)
+		public void collect(String handle, Object serviceObject)
 		{
 			synchronized (_refs)
 			{
@@ -83,6 +83,7 @@ public class SnakeClient
 					//e.printStackTrace();
 				}
 
+				System.gc();
 				List<String> deadObjectHandles = new ArrayList<String>();
 
 				//判断哪些对象不用了
@@ -109,7 +110,8 @@ public class SnakeClient
 				{
 					Logger.getLogger(getClass()).debug(
 						String.format("request to remove objects on server side: %s", deadObjectHandles));
-					getServerSideServiceObjectPool().destoryServiceObjects(deadObjectHandles.toArray(new String[0]));
+					getServerSideServiceObjectPool().removeCachedServiceObjects(
+						deadObjectHandles.toArray(new String[0]));
 				}
 			}
 		}
@@ -174,7 +176,7 @@ public class SnakeClient
 
 	SerializerFactory _serializerFactory;;
 
-	ServiceObjectsMonitorThread _serviceObjectsMonitor;
+	ServiceObjectsCollector _serviceObjectsMonitor;
 
 	String _serviceUrl;
 
@@ -186,7 +188,7 @@ public class SnakeClient
 		_serviceUrl = serviceUrl;
 		_serializerFactory = new SerializerFactory();
 		_serializerFactory.addFactory(new ClientSideRemoteObjectSerializerFactory(this));
-		_serviceObjectsMonitor = new ServiceObjectsMonitorThread(this);
+		_serviceObjectsMonitor = new ServiceObjectsCollector(this);
 		_serviceObjectsMonitor.start();
 	}
 
@@ -203,7 +205,7 @@ public class SnakeClient
 	public Object createServiceObjectProxy(String serviceObjectName, Class... apiClasses)
 	{
 		Object proxy = new ServiceObjectProxyFactory().create(this, serviceObjectName, apiClasses);
-		_serviceObjectsMonitor.cache(serviceObjectName, proxy);
+		_serviceObjectsMonitor.collect(serviceObjectName, proxy);
 		return proxy;
 	}
 
