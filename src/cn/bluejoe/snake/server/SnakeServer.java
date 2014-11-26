@@ -51,6 +51,11 @@ public class SnakeServer
 		_serviceObjectPool.destroy();
 	}
 
+	public SerializerFactory getSerializerFactory()
+	{
+		return _serializerFactory;
+	}
+
 	public Object getServiceObject(String serviceObjectName)
 	{
 		return _serviceObjectPool.getServiceObject(serviceObjectName);
@@ -95,6 +100,11 @@ public class SnakeServer
 		responseCommand.setException(executionException);
 		//写的时候还有可能有异常
 		response(os, responseCommand);
+	}
+
+	public void setSerializerFactory(SerializerFactory serializerFactory)
+	{
+		_serializerFactory = serializerFactory;
 	}
 
 	public void setStreamSourceFactory(StreamReceiverFactory streamSourceFactory)
