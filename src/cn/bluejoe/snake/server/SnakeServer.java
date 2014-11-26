@@ -106,28 +106,4 @@ public class SnakeServer
 	{
 		_streamSourceFactory = streamSourceFactory;
 	}
-
-	public void destroy(String[] handles)
-	{
-		_serviceObjectPool.destoryServiceObjects(handles);
-	}
-
-	public void destoryServiceObjects(String[] handles)
-	{
-	}
-
-	public boolean containsServiceObject(String serviceObjectName)
-	{
-		return false;
-	}
-
-	public String[] getPooledObjectNames()
-	{
-		return null;
-	}
-
-	public long getIdCounter()
-	{
-		return 0;
-	}
 }
