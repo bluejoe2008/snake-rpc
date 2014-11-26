@@ -1,6 +1,6 @@
 package cn.bluejoe.snake.client;
 
-import cn.bluejoe.snake.so.ServiceObjectHandle;
+import cn.bluejoe.snake.proxy.ServiceObjectHandle;
 
 import com.caucho.hessian.io.AbstractHessianInput;
 import com.caucho.hessian.io.Deserializer;

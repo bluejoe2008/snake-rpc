@@ -1,8 +1,8 @@
 package cn.bluejoe.snake.client;
 
-import cn.bluejoe.snake.so.ServiceObjectHandle;
-import cn.bluejoe.snake.so.ServiceObjectProxy;
-import cn.bluejoe.snake.so.ServiceObjectProxySerializer;
+import cn.bluejoe.snake.proxy.ServiceObjectHandle;
+import cn.bluejoe.snake.proxy.ServiceObjectProxy;
+import cn.bluejoe.snake.proxy.ServiceObjectProxySerializer;
 
 import com.caucho.hessian.io.AbstractSerializerFactory;
 import com.caucho.hessian.io.Deserializer;

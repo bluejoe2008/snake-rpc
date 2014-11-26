@@ -18,7 +18,7 @@ import org.mortbay.jetty.Server;
 import org.mortbay.jetty.servlet.Context;
 import org.mortbay.jetty.servlet.ServletHolder;
 
-import cn.bluejoe.snake.mem.ServiceObjectPool;
+import cn.bluejoe.snake.pool.ServiceObjectPool;
 
 public class SnakeClientTest
 {

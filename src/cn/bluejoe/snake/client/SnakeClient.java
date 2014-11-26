@@ -32,12 +32,12 @@ import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.log4j.Logger;
 
-import cn.bluejoe.snake.mem.ServiceObjectPool;
 import cn.bluejoe.snake.message.SnakeMessageReader;
 import cn.bluejoe.snake.message.SnakeMessageWriter;
+import cn.bluejoe.snake.pool.ServiceObjectPool;
+import cn.bluejoe.snake.proxy.ServiceObjectProxyFactory;
 import cn.bluejoe.snake.server.ServerSideRunnable;
 import cn.bluejoe.snake.server.SnakeServer;
-import cn.bluejoe.snake.so.ServiceObjectProxyFactory;
 import cn.bluejoe.snake.stream.ByteArrayStreamReceiverFactory;
 import cn.bluejoe.snake.stream.StreamReceiverFactory;
 

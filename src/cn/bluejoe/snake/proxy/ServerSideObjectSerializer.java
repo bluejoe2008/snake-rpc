@@ -1,10 +1,10 @@
-package cn.bluejoe.snake.so;
+package cn.bluejoe.snake.proxy;
 
 import java.io.IOException;
 
 import org.apache.commons.lang.ClassUtils;
 
-import cn.bluejoe.snake.mem.ServiceObjectPool;
+import cn.bluejoe.snake.pool.ServiceObjectPool;
 
 import com.caucho.hessian.io.AbstractHessianOutput;
 import com.caucho.hessian.io.Serializer;

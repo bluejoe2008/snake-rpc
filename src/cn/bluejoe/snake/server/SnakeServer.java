@@ -4,11 +4,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import cn.bluejoe.snake.mem.DefaultServiceObjectPool;
-import cn.bluejoe.snake.mem.ServiceObjectPool;
 import cn.bluejoe.snake.message.MethodCallReply;
 import cn.bluejoe.snake.message.SnakeMessageReader;
 import cn.bluejoe.snake.message.SnakeMessageWriter;
+import cn.bluejoe.snake.pool.DefaultServiceObjectPool;
+import cn.bluejoe.snake.pool.ServiceObjectPool;
 import cn.bluejoe.snake.stream.ByteArrayStreamReceiverFactory;
 import cn.bluejoe.snake.stream.StreamReceiverFactory;
 
